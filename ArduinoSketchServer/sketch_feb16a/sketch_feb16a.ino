@@ -1,6 +1,6 @@
 #include "PubSubClient.h" // Библиотека для работы с MQTT
 #include <BlynkSimpleEsp32.h> // Библиотека для работы с Blynk сервером
-#include <ArduinoJson.h> // Библиотека для работы с JSON 
+#include <ArduinoJson.h> // Библиотека для работы с JSON
 
 #define BLYNK_PRINT Serial // Для отладки
 #define BLYNK_MAX_READBYTES 1024 // Буфер для отладки
@@ -35,8 +35,8 @@ struct DEMS // Структура данных
 };
 DEMS DEMS;
 
-char auth[] = "S2AX_TS4iBJJIplwSLqJWpJnsASTtWYg"; // API для Blynk
-//char auth[] = "6OizTFUl0i77AIqq-XG6cJaLAHCsGUFd";
+char auth[] = "API_BLYNK"; // API для Blynk
+//char auth[] = "API_BLYNK";
 //char serveraddress[] = "trsh.su"; // Адреса облачного на выбор сервера
 //char serveraddress[] = "oasiskit.com";
 char serveraddress[] = "192.168.1.7"; // IP локального сервера
@@ -46,15 +46,15 @@ char pass[] = "123";
 char ssidAndroid[] = "AndroidAPf97a"; // Моя Wi-Fi сеть (телефон)
 char passAndroid[] = "123";
 
-// char* topic = "channels/991879/publish/S0OEVBLG2U4AN3FF"; 
+// char* topic = "channels/991879/publish/S0OEVBLG2U4AN3FF";
 
 const char* server = "mqtt.thingspeak.com"; // Адрес сервера
 char mqttUserName[] = "ESP8266Client"; // Имя клиента для MQTT
-char mqttPass[] = "E1RFJQJ72D7RYFFR"; // Уникальный API ключ для MQTT
+char mqttPass[] = "API_MQTT"; // Уникальный API ключ для MQTT
 long readChannelID = 991879; // Можно задать разные номера для записи и чтения
-long writeChannelID = 991879; 
-char readAPIKey[] = "D1Z2K5TRFD3EJAC4"; // Уникальный API ключ для HTTP для чтения и записи
-char writeAPIKey[]   = "S0OEVBLG2U4AN3FF";
+long writeChannelID = 991879;
+char readAPIKey[] = "API_MQTT"; // Уникальный API ключ для HTTP для чтения и записи
+char writeAPIKey[]   = "API_MQTT";
 const int mqttPort = 1883; // Порт для MQTT
 
 long CheckWiFiConnectionTime = 15000L; // Проверить wi-fi соединение каждые 15 сек
@@ -75,19 +75,19 @@ void CheckConnection(){
     WiFiConnect();
   }
   else{
-    Serial.println("Все ок! Работаем дальше..");   
+    Serial.println("Все ок! Работаем дальше..");
   }
 }
 
 //********************* Функция организует подключение к Wi-Fi сети частного дома ***************************
-void WiFiConnect() 
+void WiFiConnect()
 {
   TimeBetween = 0;
   int switcher = 0;
   String clientName="ESP-Thingspeak";
   if (WiFi.status() != WL_CONNECTED)
   {
-    while (WiFi.status() != WL_CONNECTED) 
+    while (WiFi.status() != WL_CONNECTED)
     {
     if (switcher == 0)
     {
@@ -107,7 +107,7 @@ void WiFiConnect()
     Serial.println("");
     if (switcher == 0)
     {
-    Serial.println("WiFi PC connected");  
+    Serial.println("WiFi PC connected");
     } else if (switcher == 1)
     {
       Serial.println("WiFi Android connected");
@@ -121,25 +121,25 @@ void WiFiConnect()
      if (switcher == 0)
     {
       switcher = 1;
-    } else switcher = 0;    
-  }  
+    } else switcher = 0;
+  }
 }
 
 //********************* Функция формирует рандомный ID клиента MQTT для возможности подключения ***************************
 void getID(char clientID[], int idLength)
 {
-  static const char alphanum[] ="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";                        
-  for (int i = 0; i < idLength; i++) 
+  static const char alphanum[] ="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  for (int i = 0; i < idLength; i++)
   {
     clientID[i] = alphanum[random(62)];
   }
-  clientID[idLength] = '\0';  
+  clientID[idLength] = '\0';
 }
 
 //********************* Функция вызывается каждый раз когда происходит обновления подписок MQTT ***************************
-void callback(char* topicX, byte* payloadX, unsigned int length) 
+void callback(char* topicX, byte* payloadX, unsigned int length)
 {
-    char p[length + 1]; 
+    char p[length + 1];
     memcpy(p,payloadX,length);
     p[length] += NULL;
     webhookdata = p;
@@ -159,7 +159,7 @@ void UpdateVirtualPins()
   Blynk.virtualWrite(V10, DEMS.RequestChoice);
   TimeCur = millis();
   TimerAll = TimeCur - TimeStart;
-  TimeBetween = TimerAll;   
+  TimeBetween = TimerAll;
   if (DEMS.RequestChoice == 1)
   {
     Blynk.virtualWrite(V11, TimeBetween);
@@ -186,7 +186,7 @@ void CheckThingSpeak()
   Blynk.virtualWrite(V6, checkflag);
   }
   else if (DEMS.RequestChoice == 2)
-  { 
+  {
     TimeStart = millis();
     if (MQTTSubscribe(readChannelID, 0, readAPIKey, 0))
     {
@@ -224,15 +224,15 @@ void MQTTConnect()
    client.setCallback(callback);
    if (!client.connected())
    {
-    while (!client.connected()) 
-    { 
+    while (!client.connected())
+    {
       getID(clientID, 8);
       Serial.print("Attempting MQTT connection...");
-      if (client.connect(clientID, mqttUserName, mqttPass)) 
+      if (client.connect(clientID, mqttUserName, mqttPass))
         {
           Serial.println("Connected with Client ID: " + String(clientID) + " User "+ String(mqttUserName) + " Pwd "+String(mqttPass));
-        } 
-        else 
+        }
+        else
           {
             TimeBetween = 0;
             Serial.print("failed, rc=");
@@ -247,7 +247,7 @@ void MQTTConnect()
 //********************* Подписка на канал связи Thingspeak ***************************
 int MQTTSubscribe(long subChannelID, int field, char* readKey, int unsubSub)
 {
-String myTopic;  
+String myTopic;
   if (field == 0)
   {
         myTopic = "channels/" + String(subChannelID) + "/subscribe/json/" + String(readKey);
@@ -261,7 +261,7 @@ String myTopic;
   if (unsubSub == 1)
   {
     return client.unsubscribe(myTopic.c_str());
-  }  
+  }
 return client.subscribe(myTopic.c_str(),0);
 }
 
@@ -272,18 +272,18 @@ void JsonParsingHTTP()
   DynamicJsonDocument doc(capacity);
   DeserializationError error = deserializeJson(doc, webhookdata);
   JsonObject feeds_0 = doc["feeds"][0];
-  if (error) 
+  if (error)
   {
     Serial.print(F("deserializeJson() failed: "));
     Serial.println(error.c_str());
     return;
   }
     Serial.println("HTTP REQUEST IN WORK");
-    DEMS.windspeed = feeds_0["field1"]; 
-    DEMS.windpower = feeds_0["field2"]; 
-    DEMS.solarrad = feeds_0["field3"]; 
+    DEMS.windspeed = feeds_0["field1"];
+    DEMS.windpower = feeds_0["field2"];
+    DEMS.solarrad = feeds_0["field3"];
     DEMS.solarpower = feeds_0["field4"];
-    DEMS.curload = feeds_0["field5"]; 
+    DEMS.curload = feeds_0["field5"];
     DEMS.batterysoc = feeds_0["field6"];
     DEMS.voltage = feeds_0["field7"];
     DEMS.cur = feeds_0["field8"];
@@ -294,25 +294,25 @@ void JsonParsingMQTT()
   const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(10) + JSON_OBJECT_SIZE(16) + 570;
   DynamicJsonDocument doc(capacity);
   DeserializationError error = deserializeJson(doc, webhookdata);
-  if (error) 
+  if (error)
   {
     Serial.print(F("deserializeJson() failed: "));
     Serial.println(error.c_str());
     return;
   }
     Serial.println("MQTT REQUEST IN WORK");
-    DEMS.windspeed = doc["field1"]; 
-    DEMS.windpower = doc["field2"]; 
-    DEMS.solarrad = doc["field3"]; 
+    DEMS.windspeed = doc["field1"];
+    DEMS.windpower = doc["field2"];
+    DEMS.solarrad = doc["field3"];
     DEMS.solarpower = doc["field4"];
-    DEMS.curload = doc["field5"]; 
+    DEMS.curload = doc["field5"];
     DEMS.batterysoc = doc["field6"];
     DEMS.voltage = doc["field7"];
     DEMS.cur = doc["field8"];
 }
 
 //********************* Функция инициализации  ***************************
-void setup() 
+void setup()
 {
   int status = WL_IDLE_STATUS;
   Serial.begin(115200);
@@ -328,7 +328,7 @@ void setup()
 }
 
 //********************* Основной цикл программы  ***************************
-void loop() 
+void loop()
 {
   if(ConBlynk){
     Blynk.run();  // Вызываем функцию если соединение есть
@@ -336,7 +336,7 @@ void loop()
       Blynk.connect();
       Blynk.run();
   }
-  timer.run(); 
+  timer.run();
   timer1.run();
   timer2.run();
   timer3.run();
